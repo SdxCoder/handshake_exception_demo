@@ -2,31 +2,36 @@ import 'dart:isolate';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:injectable/injectable.dart';
 
-@singleton
 class FirebaseCrashlyticsConfiguration {
-  @factoryMethod
+  static FirebaseCrashlyticsConfiguration? instance;
+
   factory FirebaseCrashlyticsConfiguration.initialize() {
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
-    Isolate.current.addErrorListener(
-      RawReceivePort((pair) async {
-        final List<dynamic> errorAndStacktrace = pair;
-        await FirebaseCrashlytics.instance.recordError(
-          errorAndStacktrace.first,
-          errorAndStacktrace.last,
-          fatal: true,
-        );
-      }).sendPort,
-    );
-    const enableIfNotInDevelopment = kReleaseMode;
-    FirebaseCrashlytics.instance
-        .setCrashlyticsCollectionEnabled(enableIfNotInDevelopment);
-    return const FirebaseCrashlyticsConfiguration._();
+    if (instance == null) {
+      FlutterError.onError =
+          FirebaseCrashlytics.instance.recordFlutterFatalError;
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+      Isolate.current.addErrorListener(
+        RawReceivePort((pair) async {
+          final List<dynamic> errorAndStacktrace = pair;
+          await FirebaseCrashlytics.instance.recordError(
+            errorAndStacktrace.first,
+            errorAndStacktrace.last,
+            fatal: true,
+          );
+        }).sendPort,
+      );
+      const enableIfNotInDevelopment = kReleaseMode;
+      FirebaseCrashlytics.instance
+          .setCrashlyticsCollectionEnabled(enableIfNotInDevelopment);
+
+      instance = const FirebaseCrashlyticsConfiguration._();
+    }
+
+    return instance!;
   }
 
   const FirebaseCrashlyticsConfiguration._();
