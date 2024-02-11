@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:handshake_exception_demo/firebase_crashlytics_config.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   FirebaseCrashlyticsConfiguration.initialize();
   runApp(const MyApp());
 }
